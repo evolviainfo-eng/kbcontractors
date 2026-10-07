@@ -1,0 +1,17 @@
+# local tooling and sources (only the built site is committed)
+assets/
+src/
+css/src/
+js/src/
+gen.py
+brief.json
+gaps.md
+media.json
+fs-server.js
+_qa/
+_gate/
+_phone/
+_ios/
+_build/
+.claude/
+.DS_Store

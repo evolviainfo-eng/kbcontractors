@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://kbcontractorsyorkshire.co.uk/sitemap.xml
