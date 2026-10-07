@@ -181,15 +181,52 @@
     v && v.addEventListener('loadeddata', sync);
   });
   if (rows.length) { addEventListener('scroll', function () { requestAnimationFrame(sync); }, { passive: true }); setTimeout(sync, 400); }
-  /* fine pointer: hovering a row opens it (short intent delay); touch and keyboard use the native details */
+  /* accordion: one row open at a time; the closing row folds while the clicked one unfolds, and the clicked
+     row's heading stays where it was on screen, so nothing jumps under the pointer */
+  var ACC_DUR = 560, ACC_EASE = 'cubic-bezier(.33, 1, .68, 1)';
+  var accPanel = function (row) { return row.querySelector('.svc__panel'); };
+  var accEnd = function (row) { var p = accPanel(row); if (row._a) { row._a.cancel(); row._a = null; } p.style.height = ''; row.classList.remove('is-animating', 'is-closing'); };
+  var accFold = function (row) {
+    if (!row.open || row.classList.contains('is-closing')) return;
+    var p = accPanel(row), h = p.getBoundingClientRect().height;
+    if (row._a) row._a.cancel();
+    row.classList.add('is-animating', 'is-closing');
+    if (reduce || !p.animate) { row.open = false; accEnd(row); return; }
+    var an = row._a = p.animate([{ height: h + 'px' }, { height: '0px' }], { duration: ACC_DUR, easing: ACC_EASE, fill: 'forwards' });
+    an.onfinish = function () { row.open = false; accEnd(row); };
+  };
+  var accUnfold = function (row) {
+    var p = accPanel(row);
+    if (row._a) row._a.cancel();
+    row.classList.remove('is-closing');
+    row.open = true;
+    if (reduce || !p.animate) { accEnd(row); return; }
+    var h = p.scrollHeight;
+    row.classList.add('is-animating');
+    var an = row._a = p.animate([{ height: '0px' }, { height: h + 'px' }], { duration: ACC_DUR, easing: ACC_EASE });
+    an.onfinish = function () { accEnd(row); sync(); };
+    var copy = row.querySelector('.svc__copy');
+    copy && copy.animate([{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }], { duration: 700, delay: 140, easing: ACC_EASE, fill: 'backwards' });
+  };
+  var accHold = function (row) {
+    /* keep this row's heading still on screen while rows above it accFold */
+    var sum = row.querySelector('.svc__sum'), y0 = sum.getBoundingClientRect().top, t0 = performance.now();
+    var step = function (t) {
+      var dy = sum.getBoundingClientRect().top - y0;
+      if (Math.abs(dy) > .5) scrollBy(0, dy);
+      if (t - t0 < ACC_DUR + 80) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
   rows.forEach(function (row) {
-    var t = 0;
-    row.addEventListener('pointerenter', function (e) {
-      if (e.pointerType !== 'mouse' || !fine.matches || row.open) return;
-      t = setTimeout(function () { rows.forEach(function (r) { if (r !== row) r.open = false; }); row.open = true; }, 180);
+    row.querySelector('.svc__sum').addEventListener('click', function (e) {
+      e.preventDefault();
+      if (row.open && !row.classList.contains('is-closing')) { accFold(row); return; }
+      var above = false;
+      rows.forEach(function (r) { if (r !== row && r.open) { if (r.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING) above = true; accFold(r); } });
+      accUnfold(row);
+      if (above && !reduce) accHold(row);
     });
-    row.addEventListener('pointerleave', function () { clearTimeout(t); });
-    row.addEventListener('toggle', function () { if (row.open) rows.forEach(function (r) { if (r !== row && r.open) r.open = false; }); });
   });
 
   /* ---- before / after: range input drives the split; pointer drag anywhere on the photo; view switcher ---- */

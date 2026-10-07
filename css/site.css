@@ -386,18 +386,18 @@ body { font-feature-settings: "kern", "liga", "tnum" 0; }
 .svc__row { border-bottom: 1px solid var(--c-line); }
 .svc__sum { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--col-gap); align-items: center; padding: clamp(18px, 1.8vw, 26px) 0; cursor: pointer; list-style: none; }
 .svc__sum::-webkit-details-marker { display: none; }
-.svc__title { grid-column: 1 / span 5; font-family: var(--f-display); font-weight: 800; font-size: var(--t-h2); line-height: 1.02; letter-spacing: var(--track-h2); transition: color var(--d-ui) var(--ease), transform var(--d-ui) var(--ease); }
+.svc__title { grid-column: 1 / span 5; font-family: var(--f-display); font-weight: 800; font-size: var(--t-h2); line-height: 1.02; letter-spacing: var(--track-h2); transition: color .45s var(--ease), transform var(--d-ui) var(--ease); }
 .svc__desc { grid-column: 6 / span 5; color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.45; }
 .svc__mark { grid-column: 12; justify-self: end; position: relative; width: 22px; height: 22px; }
-.svc__mark::before, .svc__mark::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; background: currentColor; transition: transform var(--d-ui) var(--ease), background-color var(--d-ui) var(--ease); }
+.svc__mark::before, .svc__mark::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; background: currentColor; transition: transform .5s var(--ease), background-color var(--d-ui) var(--ease); }
 .svc__mark::after { transform: rotate(90deg); }
-.svc__row[open] .svc__mark::after { transform: rotate(0deg); }
-.svc__row[open] .svc__mark::before, .svc__row[open] .svc__mark::after { background: var(--c-accent); }
-.svc__row[open] .svc__title { color: var(--c-accent); }
+.svc__row[open]:not(.is-closing) .svc__mark::after { transform: rotate(0deg); }
+.svc__row[open]:not(.is-closing) .svc__mark::before, .svc__row[open]:not(.is-closing) .svc__mark::after { background: var(--c-accent); }
+.svc__row[open]:not(.is-closing) .svc__title { color: var(--c-accent); }
 @media (hover: hover) and (pointer: fine) { .svc__sum:hover .svc__title { transform: translateX(6px); } }
-.svc__panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--d-ui) var(--ease); }
-.svc__row[open] .svc__panel { grid-template-rows: 1fr; }
-.svc__inner { min-height: 0; overflow: hidden; }
+/* the row opens by height (js/src/kb.js), the text inside settles in after it; photos are never faded */
+.svc__panel { overflow: clip; }
+.svc__row.is-animating .svc__panel { will-change: height; }
 .svc__body { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--col-gap); padding-bottom: clamp(24px, 2.4vw, 36px); }
 .svc__fig { grid-column: 1 / span 4; grid-row: 1; }
 .svc__fig .ph { width: 100%; aspect-ratio: 1 / 1; }
